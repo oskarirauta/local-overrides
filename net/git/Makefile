@@ -102,7 +102,7 @@ MAKE_FLAGS := \
 	gitwebdir="/www/cgi-bin"
 
 CONFIGURE_ARGS += \
-	--with-iconv=$(STAGING_DIR)/usr/lib/libiconv-full/lib \
+	--without-iconv \
 	--with-curl=$(STAGING_DIR)/usr/lib \
 	--with-expat=$(STAGING_DIR)/usr/lib \
 	--with-editor=/usr/bin/nano
