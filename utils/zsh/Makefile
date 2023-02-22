@@ -89,6 +89,12 @@ endef
 TARGET_CFLAGS += $(FPIC) -ffunction-sections -fdata-sections -flto
 TARGET_LDFLAGS += $(FPIC) -Wl,--gc-sections -flto
 
+define Package/zsh/conffiles
+/etc/zshrc
+/etc/zprofile
+/etc/zshenv
+endef
+
 define Package/zsh/postinst
 #!/bin/sh
 grep zsh $${IPKG_INSTROOT}/etc/shells || \
