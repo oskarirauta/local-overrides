@@ -97,15 +97,9 @@ MAKE_FLAGS := \
 	NO_PYTHON="YesPlease" \
 	NO_TCLTK="YesPlease" \
 	NO_INSTALL_HARDLINKS="yes" \
-	gitwebdir="/www/cgi-bin" \
-	GITWEB_JS="/gitweb/gitweb.js" \
-	GITWEB_CSS="/gitweb/gitweb.css" \
-	GITWEB_LOGO="/gitweb/gitweb-logo.png" \
-	GITWEB_FAVICON="/gitweb/gitweb-favicon.png" \
+	NO_ICONV="YesPlease" \
 	uname_S="Linux" \
-
-#CONFIGURE_ARGS += \
-#	--without-iconv \
+	gitwebdir="/www/cgi-bin"
 
 CONFIGURE_ARGS += \
 	--with-curl=$(STAGING_DIR)/usr/lib \
