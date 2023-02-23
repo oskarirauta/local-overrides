@@ -1,0 +1,68 @@
+Index: esniper-2-35-0/configure
+===================================================================
+--- esniper-2-35-0.orig/configure
++++ esniper-2-35-0/configure
+@@ -3630,8 +3630,8 @@ if test -n "$CURL_CONFIG"; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CURL_CONFIG" >&5
+ $as_echo "$CURL_CONFIG" >&6; }
+ else
+-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+-$as_echo "no" >&6; }
++  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CURL_CONFIG" >&5
++$as_echo "$CURL_CONFIG" >&6; }
+ fi
+ 
+ 
+@@ -3655,15 +3655,6 @@ LIBS="$CURLLIBS $LIBS"
+ check_min=7.1.1
+ 
+ 
+-ac_fn_c_check_func "$LINENO" "curl_easy_setopt" "ac_cv_func_curl_easy_setopt"
+-if test "x$ac_cv_func_curl_easy_setopt" = xyes; then :
+-
+-else
+-  as_fn_error $? "cURL $check_min or newer required \
+-(cURL is available from http://curl.haxx.se/)" "$LINENO" 5
+-fi
+-
+-
+ ac_fn_c_check_func "$LINENO" "curl_easy_strerror" "ac_cv_func_curl_easy_strerror"
+ if test "x$ac_cv_func_curl_easy_strerror" = xyes; then :
+ 
+@@ -3675,8 +3666,8 @@ fi
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for cURL SSL support" >&5
+ $as_echo_n "checking for cURL SSL support... " >&6; }
+ if test XSSL != X`$CURL_CONFIG --feature|grep SSL`; then
+-  as_fn_error $? "no SSL
+-cURL is available from http://curl.haxx.se/" "$LINENO" 5
++  {  $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
++$as_echo "yes" >&6; }
+ else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ $as_echo "yes" >&6; }
+Index: esniper-2-35-0/configure.ac
+===================================================================
+--- esniper-2-35-0.orig/configure.ac
++++ esniper-2-35-0/configure.ac
+@@ -29,20 +29,10 @@ LIBS="$CURLLIBS $LIBS"
+ dnl check version curl_easy were added in 7.1.1
+ check_min=7.1.1
+ 
+-AC_CHECK_FUNC(curl_easy_setopt, 
+-		   [],
+-		   AC_MSG_ERROR([cURL $check_min or newer required \
+-(cURL is available from http://curl.haxx.se/)]))
+-
+-AC_CHECK_FUNC(curl_easy_strerror, 
+-		   [],
+-		   CURLCFLAGS="$CURLCFLAGS -D NEED_CURL_EASY_STRERROR")
+-
+ dnl check for curl SSL support
+ AC_MSG_CHECKING(for cURL SSL support)
+ if test XSSL != X`$CURL_CONFIG --feature|grep SSL`; then
+-  AC_MSG_ERROR([no SSL
+-cURL is available from http://curl.haxx.se/])
++  AC_MSG_RESULT(yes)
+ else
+   AC_MSG_RESULT(yes)
+ fi
