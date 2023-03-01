@@ -123,8 +123,7 @@ define Package/zsh/install
 	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
 		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh \
 			$(1)/bin \
-			$(1)/$(CONFIGURE_PREFIX)/bin \
-			$(1)/$(CONFIGURE_PREFIX)/lib
+			$(1)/$(CONFIGURE_PREFIX)/bin
 endef
 
 define Package/zsh/postrm
