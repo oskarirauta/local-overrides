@@ -107,15 +107,14 @@ CONFIGURE_ARGS += \
 	$(if $(CONFIG_LIBCURL_WOLFSSL),--with-crypto=cyassl)
 
 define Package/transmission-daemon/install
-	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/usr/bin $(1)/etc/init.d $(1)/etc/config $(1)/etc/sysctl.d
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/transmission-daemon $(1)/usr/bin/
-	$(INSTALL_DIR) $(1)/etc/init.d/
 	$(INSTALL_BIN) files/transmission.init $(1)/etc/init.d/transmission
-	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) files/transmission.config $(1)/etc/config/transmission
-	$(INSTALL_DIR) $(1)/etc/sysctl.d/
 	$(INSTALL_CONF) files/transmission.sysctl $(1)/etc/sysctl.d/20-transmission.conf
 	$(call InstallSeccomp,$(1),./files/transmission-daemon.json)
+	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
+		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/bin
 endef
 
 define Package/transmission-cli/install
@@ -125,16 +124,22 @@ define Package/transmission-cli/install
 			$(PKG_INSTALL_DIR)/usr/bin/transmission-edit \
 			$(PKG_INSTALL_DIR)/usr/bin/transmission-show \
 			$(1)/usr/bin/
+	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
+		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/bin
 endef
 
 define Package/transmission-remote/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/transmission-remote $(1)/usr/bin/
+	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
+		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/bin
 endef
 
 define Package/transmission-web/install
 	$(INSTALL_DIR) $(1)/usr/share/transmission
 	$(CP) $(PKG_INSTALL_DIR)/usr/share/transmission/web $(1)/usr/share/transmission/
+	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
+		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/share/transmission
 endef
 
 $(eval $(call BuildPackage,transmission-daemon))
