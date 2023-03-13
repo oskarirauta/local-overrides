@@ -42,6 +42,8 @@ return network.registerProtocol('zerotier', {
 		o = s.taboption('general', form.Value, 'network_id', _('Network id'), _('Required. Network id where to join.'));
 		o.optional = false;
 		o.rmempty = false;
+		o = s.taboption('general', form.Value, 'delay', _('Delay'), _('Amount of seconds to delay connection attempt. Default: 0'));
+		o.optional = true;
 		o = s.taboption('general', form.Value, 'config_path', _('Config path'), _('Path to your prepared connection configuration.'));
 		o.optional = true;
 		o = s.taboption('general', form.Flag, 'copy_config_path', _('Copy config files'), _('Instead of linking to configuration path, copy it'));
