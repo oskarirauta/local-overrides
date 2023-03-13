@@ -23,12 +23,13 @@ proto_zerotier_init_config() {
 	proto_config_add_string "metric"
 	proto_config_add_string "config_file"
 	proto_config_add_boolean "copy_config_file"
+	proto_config_add_int "delay"
 }
 
 proto_zerotier_setup() {
 
 	local cfg="$1"
-	local nwid ignore_route metric_fix status msg
+	local nwid ignore_route metric_fix status msg delay
 
 	( proto_add_host_dependency "$cfg" '' "wan" )
 
@@ -38,6 +39,13 @@ proto_zerotier_setup() {
 	config_get nwid "$1" "network_id"
 	config_get ignore_route "$cfg" "ignore_route"
 	config_get metric_fix "$cfg" "metric"
+	config_get delay "$cfg" "delay"
+
+	[ -z "$delay" ] && delay="0"
+	[ -n "$delay" ] && [ "$delay" -eq "$delay" ] 2>/dev/null
+	if [ $? -ne 0 ]; then
+		delay="0"
+	fi
 
 	[ -z "$nwid" ] && {
 		echo "zerotier network id not set for $cfg"
@@ -45,6 +53,8 @@ proto_zerotier_setup() {
 		proto_block_restart "$cfg"
 		return 1
 	}
+
+	[ "$delay" -gt "0" ] && sleep "$delay"
 
 	[ "$(service_status_simple)" != "running" ] && {
 		service_start

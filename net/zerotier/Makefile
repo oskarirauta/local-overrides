@@ -7,7 +7,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=zerotier
 PKG_VERSION:=1.10.3
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/zerotier/ZeroTierOne/tar.gz/$(PKG_VERSION)?
@@ -58,8 +58,8 @@ endif
 endef
 
 # Make binary smaller
-TARGET_CFLAGS += -ffunction-sections -fdata-sections
-TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed
+TARGET_CFLAGS += -ffunction-sections -fdata-sections -Wl,-z,noexecstack
+TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed -Wl,-z,noexecstack
 
 define Package/zerotier/install
 	$(INSTALL_DIR) $(1)/usr/bin $(1)/lib/netifd/proto $(1)/usr/share/zerotier
