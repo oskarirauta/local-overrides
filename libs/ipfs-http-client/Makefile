@@ -55,6 +55,8 @@ define Package/ipfs-http-client-tests/description
   This package contains library tests.
 endef
 
+TARGET_CFLAGS+= -Wno-error=deprecated-declarations
+
 CMAKE_OPTIONS += \
 	-DBUILD_SHARED_LIBS=ON \
 	-DBUILD_TESTING=ON
