@@ -62,10 +62,9 @@ TARGET_CFLAGS += -ffunction-sections -fdata-sections -Wl,-z,noexecstack
 TARGET_LDFLAGS += -Wl,--gc-sections,--as-needed -Wl,-z,noexecstack
 
 define Package/zerotier/install
-	$(INSTALL_DIR) $(1)/usr/bin $(1)/lib/netifd/proto $(1)/usr/share/zerotier
+	$(INSTALL_DIR) $(1)/usr/bin $(1)/lib/netifd/proto
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/zerotier-one $(1)/usr/bin/
-	$(INSTALL_BIN) ./files/lib/netifd/proto/zerotier.sh $(1)/lib/netifd/proto/
-	$(CP) ./files/usr/share/zerotier/*.sh $(1)/usr/share/zerotier/
+	$(INSTALL_BIN) ./files/zerotier.sh $(1)/lib/netifd/proto/
 	$(LN) zerotier-one $(1)/usr/bin/zerotier-cli
 	$(LN) zerotier-one $(1)/usr/bin/zerotier-idtool
 
