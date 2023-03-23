@@ -32,7 +32,6 @@ PKG_CONFIG_DEPENDS:= \
   CONFIG_UACME_UALPN
 
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/nls.mk
 
 define Package/uacme/Default
   SECTION:=net
