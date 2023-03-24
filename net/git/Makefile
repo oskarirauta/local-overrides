@@ -29,7 +29,7 @@ define Package/git/Default
   SECTION:=net
   CATEGORY:=Network
   SUBMENU:=Version Control Systems
-  DEPENDS:=+libopenssl +libpthread +librt +zlib +libcurl +libexpat +librt $(ICONV_DEPENDS)
+  DEPENDS:=+libopenssl +libpthread +librt +zlib +libcurl +libexpat +librt
   URL:=https://git-scm.com
   MAINTAINER:=Peter Wagner <tripolar@gmx.at>
 endef
@@ -80,8 +80,6 @@ endef
 define Package/git-gitweb/conffiles
 /etc/gitweb.conf
 endef
-
-TARGET_LDFLAGS += -liconv
 
 MAKE_FLAGS := \
 	CC="$(TARGET_CC)" \
