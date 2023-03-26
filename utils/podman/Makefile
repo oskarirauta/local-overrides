@@ -123,9 +123,6 @@ define Package/podman/install
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./files/podman.init $(1)/etc/init.d/podman
 	$(SED) 's/driver = \"\"/driver = \"overlay\"/g' $(1)/etc/containers/storage.conf
-
-	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
-		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/bin $(1)/usr/lib/podman
 endef
 
 $(eval $(call BuildPackage,podman))

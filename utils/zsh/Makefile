@@ -119,11 +119,6 @@ define Package/zsh/install
 	$(CP) $(PKG_INSTALL_DIR)/$(CONFIGURE_PREFIX)/lib/zsh/$(PKG_VERSION)/zsh/* $(1)/$(CONFIGURE_PREFIX)/lib/zsh/$(PKG_VERSION)/zsh/
 	$(CP) $(PKG_INSTALL_DIR)/$(CONFIGURE_PREFIX)/lib/zsh/$(PKG_VERSION)/zsh/net/* $(1)/$(CONFIGURE_PREFIX)/lib/zsh/$(PKG_VERSION)/zsh/net/
 	$(CP) $(PKG_INSTALL_DIR)/$(CONFIGURE_PREFIX)/lib/zsh/$(PKG_VERSION)/zsh/param/* $(1)/$(CONFIGURE_PREFIX)/lib/zsh/$(PKG_VERSION)/zsh/param/
-
-	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
-		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh \
-			$(1)/bin \
-			$(1)/$(CONFIGURE_PREFIX)/bin
 endef
 
 define Package/zsh/postrm

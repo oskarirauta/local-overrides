@@ -134,8 +134,6 @@ define Package/git/install
 	) | ( cd $(1); $(TAR) -xf - )
 	ln $(1)/usr/lib/git-core/git $(1)/usr/bin/git
 	ln $(1)/usr/lib/git-core/git-shell $(1)/usr/bin/git-shell
-	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
-		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/bin $(1)/usr/lib/git-core
 endef
 
 define Package/git-http/install
@@ -146,8 +144,6 @@ define Package/git-http/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/git-core/git-remote-ftps $(1)/usr/lib/git-core/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/git-core/git-remote-http $(1)/usr/lib/git-core/
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/git-core/git-remote-https $(1)/usr/lib/git-core/
-	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
-		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/lib/git-core/
 endef
 
 define Package/git-gitweb/install
@@ -159,8 +155,6 @@ define Package/git-gitweb/install
 	$(SED) 's,^our $$$$favicon .*,our $$$$favicon = "/gitweb/git-favicon.png";,' $(1)/www/cgi-bin/gitweb.cgi
 	$(SED) 's,^our $$$$javascript .*,our $$$$javascript = "/gitweb/gitweb.js";,' $(1)/www/cgi-bin/gitweb.cgi
 	$(CP) $(PKG_INSTALL_DIR)/www/cgi-bin/static/* $(1)/www/gitweb/
-	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
-		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/www/
 endef
 
 $(eval $(call BuildPackage,git))

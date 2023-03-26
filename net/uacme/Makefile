@@ -112,9 +112,6 @@ define Package/uacme/install
 	$(INSTALL_CONF) ./files/acme.config $(1)/etc/config/acme
 	$(INSTALL_BIN) ./files/run.sh $(1)/usr/share/uacme/run-uacme
 	$(INSTALL_BIN) ./files/acme.init $(1)/etc/init.d/acme
-
-	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
-		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/sbin /usr/share/uacme
 endef
 
 define Package/uacme-ualpn/install
@@ -124,8 +121,6 @@ define Package/uacme-ualpn/install
 
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/ualpn $(1)/usr/sbin/ualpn
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/ualpn.sh $(1)/usr/share/uacme/
-	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
-		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/sbin
 endef
 
 define Package/uacme/prerm

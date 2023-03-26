@@ -137,9 +137,6 @@ define Package/perl/install
 	
 	$(INSTALL_DIR) $(1)/usr/lib/perl5/$(PERL_VERSION)/CORE
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/perl5/$(PERL_VERSION)/CORE/libperl.so $(1)/usr/lib/perl5/$(PERL_VERSION)/CORE/
-
-	[ "$(CONFIG_NO_STRIP)" = "y" ] && \
-		STRIP=$(STAGING_DIR_HOST)/bin/sstrip $(SCRIPT_DIR)/rstrip.sh $(1)/usr/bin
 endef
 
 
