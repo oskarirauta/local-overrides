@@ -1,18 +1,18 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=podman
-PKG_VERSION:=4.4.3
+PKG_VERSION:=4.5.0
 PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://github.com/containers/podman/archive/v$(PKG_VERSION)
-PKG_HASH:=c4770787f008923ec3181ea49c31bdb4d2b77458dbc842f43053fc96a1914ee0
+PKG_HASH:=830a633630bf6e61f2b8d4ca00efdd9a173ef25cdd49d4a4364c293e088561df
 
 PKG_LICENSE:=Apache-2.0
 PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Oskari Rauta <oskari.rauta@gmail.com>
 
-PKG_BUILD_DEPENDS:=golang/host protobuf/host
+PKG_BUILD_DEPENDS:=golang/host protobuf/host btrfs-progs
 PKG_BUILD_PARALLEL:=1
 PKG_USE_MIPS16:=0
 PKG_INSTALL:=1
