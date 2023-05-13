@@ -1,0 +1,15 @@
+Index: libtins-4.4/include/tins/ip_address.h
+===================================================================
+--- libtins-4.4.orig/include/tins/ip_address.h
++++ libtins-4.4/include/tins/ip_address.h
+@@ -37,6 +37,10 @@
+ #include <tins/cxxstd.h>
+ #include <tins/macros.h>
+ 
++#ifndef uint32_t
++#include <cstdint>
++#endif
++
+ namespace Tins {
+ /**
+  * \class IPv4Address
