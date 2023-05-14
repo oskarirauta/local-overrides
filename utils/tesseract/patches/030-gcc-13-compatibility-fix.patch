@@ -1,0 +1,15 @@
+Index: tesseract-4.1.1/src/ccutil/helpers.h
+===================================================================
+--- tesseract-4.1.1.orig/src/ccutil/helpers.h
++++ tesseract-4.1.1/src/ccutil/helpers.h
+@@ -27,6 +27,10 @@
+ #include <functional>
+ #include <string>
+ 
++#ifndef uint64_t
++#include <cstdint>
++#endif
++
+ // TODO(rays) Put the rest of the helpers in the namespace.
+ namespace tesseract {
+ 
