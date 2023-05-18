@@ -1,0 +1,18 @@
+--- a/perl.h
++++ b/perl.h
+@@ -2490,6 +2490,15 @@ typedef struct padname PADNAME;
+ 
+ #ifdef USE_64_BIT_RAWIO
+ #   ifdef HAS_OFF64_T
++#       ifndef off64_t
++#          define off64_t off_t
++#       endif
++#       ifndef lseek64
++#          define lseek64 lseek
++#       endif
++#       ifndef dirent64
++#          define dirent64 dirent
++#       endif
+ #       undef Off_t
+ #       define Off_t off64_t
+ #       undef LSEEKSIZE
