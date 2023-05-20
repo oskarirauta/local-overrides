@@ -403,8 +403,8 @@ DEPENDS+=+perlbase-config +perlbase-essential +perlbase-text
 endef
 
 define Package/perlbase-diagnostics/install
-$(call perlmod/Install,$(1),diagnostics.pm pod/perldiag.pod)
-$(call perlmod/InstallBaseTests,$(1),lib/diagnostics.t)
+$(call perlmod/Install,$(1),diagnostics.pm)
+$(call perlmod/InstallBaseTests,$(1),lib/diagnostics.t pod/perldiag.pod)
 endef
 
 $(eval $(call BuildPackage,perlbase-diagnostics))
