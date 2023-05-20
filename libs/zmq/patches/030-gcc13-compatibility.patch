@@ -36,11 +36,9 @@ and satisfies conversion requirements.
  src/secure_allocator.hpp | 11 +++++++++++
  1 file changed, 11 insertions(+)
 
-diff --git a/src/secure_allocator.hpp b/src/secure_allocator.hpp
-index e0871dcc99..5e97368911 100644
 --- a/src/secure_allocator.hpp
 +++ b/src/secure_allocator.hpp
-@@ -99,6 +99,17 @@ bool operator!= (const secure_allocator_t<T> &, const secure_allocator_t<U> &)
+@@ -95,6 +95,17 @@ bool operator!= (const secure_allocator_
  #else
  template <typename T> struct secure_allocator_t : std::allocator<T>
  {
