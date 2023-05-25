@@ -83,8 +83,6 @@ endif
 
 MAKE_PATH = ports/unix
 
-TARGET_CFLAGS += -Wno-error=dangling-pointer=
-
 define Build/Compile
 	+$(HOST_MAKE_VARS) \
 	$(MAKE) $(PKG_JOBS) -C $(PKG_BUILD_DIR)/mpy-cross \

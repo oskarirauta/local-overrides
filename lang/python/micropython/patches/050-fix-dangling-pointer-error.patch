@@ -1,0 +1,10 @@
+--- a/mpy-cross/Makefile
++++ b/mpy-cross/Makefile
+@@ -21,6 +21,7 @@ CWARN = -Wall -Werror
+ CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith
+ CFLAGS += $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
+ CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
++CFLAGS += -Wno-error=dangling-pointer=
+ 
+ # Debugging/Optimization
+ ifdef DEBUG
