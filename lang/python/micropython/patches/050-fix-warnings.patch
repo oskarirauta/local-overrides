@@ -4,7 +4,7 @@
  CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith
  CFLAGS += $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
  CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
-+CFLAGS += -Wno-error=dangling-pointer=
++CFLAGS += -Wno-error=dangling-pointer= -Wno-error=enum-int-mismatch
  
  # Debugging/Optimization
  ifdef DEBUG
