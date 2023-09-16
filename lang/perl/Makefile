@@ -81,6 +81,19 @@ define Package/perl/config
 	source "$(SOURCE)/Config.in"
 endef
 
+define Package/perl-pods
+  SUBMENU:=Perl
+  SECTION:=lang
+  CATEGORY:=Languages
+  TITLE:=Perl pods
+  URL:=http://www.perl.com/
+  DEPENDS:=perl
+endef
+
+define Package/perl-pods/description
+  pods distributed by perl
+endef
+
 # Static host perl
 define Host/Configure
 	( cd $(HOST_BUILD_DIR); ./Configure -der -Uusedl -Duserelocatableinc -Dprefix=$(HOST_PERL_PREFIX) -Accflags="-fno-strict-aliasing -fstack-protector-strong -D_GNU_SOURCE" $(if $(CONFIG_PERL_THREADS),-Dusethreads,))
@@ -143,12 +156,17 @@ define Package/perl/install
 	$(CP) $(PKG_INSTALL_DIR)/usr/lib/perl5/$(PERL_VERSION)/CORE/libperl.so $(1)/usr/lib/perl5/$(PERL_VERSION)/CORE/
 endef
 
+define Package/perl-pods/install
+	$(INSTALL_DIR) $(1)/usr/lib/perl5/$(PERL_VERSION)/pods
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/pod/*.pod $(1)/usr/lib/perl5/$(PERL_VERSION)/pods/
+endef
 
 $(eval $(call RequireCommand,rsync, \
 	$(PKG_NAME) requires rsync installed on the host-system. \
 ))
 
 $(eval $(call BuildPackage,perl))
+$(eval $(call BuildPackage,perl-pods))
 $(eval $(call HostBuild))
 
 -include perlbase.mk
