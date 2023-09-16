@@ -15,13 +15,14 @@ PKG_HASH:=65c6fbe830a44ca105c443b027182c1b2c9053a91d1e72ad849dfab388b94e31
 
 PKG_MAINTAINER:=Ted Hess <thess@kitschensync.net>
 
-PKG_USE_MIPS16:=0
+PKG_BUILD_FLAGS:=no-mips16 lto
 PKG_INSTALL:=1
 PKG_BUILD_PARALLEL:=1
 
 PKG_BUILD_DEPENDS:=!USE_GLIBC:argp-standalone
 
 include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/nls.mk
 
 define Package/libv4l/Default
   TITLE:=Video 4 Linux
@@ -48,7 +49,7 @@ define Package/libv4l
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE+= wrapper libraries
-  DEPENDS := +libpthread +librt $(ICONV_DEPENDS)
+  DEPENDS := +libpthread +librt +libuargp $(ICONV_DEPENDS)
   LICENSE:=LGPL-2.1-or-later
   LICENSE_FILES:=COPYING.libv4l
 endef
@@ -72,9 +73,8 @@ define Package/v4l-utils/description
   This package contains the video4linux utilities.
 endef
 
-TARGET_CFLAGS += -flto
 TARGET_LDFLAGS += \
-	$(if $(CONFIG_USE_GLIBC),,$(STAGING_DIR)/usr/lib/libargp.a) \
+	$(if $(CONFIG_USE_GLIBC),,-largp) \
 	-Wl,--gc-sections,--as-needed
 
 CONFIGURE_ARGS+= \
