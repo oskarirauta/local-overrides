@@ -6,7 +6,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=bwm-ng
 PKG_VERSION:=0.6.3
-PKG_RELEASE:=$(AUTORELEASE)
+PKG_RELEASE:=1
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=http://www.gropp.org/bwm-ng
@@ -40,8 +40,6 @@ define Package/bwm-ng/config
   source "$(SOURCE)/Config.in"
 endef
 
-TARGET_CFLAGS += -Wno-error=format-security
-
 CONFIGURE_ARGS += \
 	$(if $(CONFIG_BWMNG_CONFIGFILE),--enable,--disable)-configfile \
 	$(if $(CONFIG_BWMNG_HTML),--enable,--disable)-html \
@@ -53,6 +51,8 @@ CONFIGURE_ARGS += \
 	--with-strip \
 	--with-procnetdev \
 	--with-diskstats
+
+TARGET_CFLAGS += -Wno-error=format-security
 
 define Package/bwm-ng/install
 	$(INSTALL_DIR) $(1)/usr/bin
