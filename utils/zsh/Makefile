@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=zsh
 PKG_VERSION:=5.9
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
 PKG_SOURCE_URL:=@SF/zsh
@@ -20,9 +20,10 @@ PKG_LICENSE:=ZSH
 PKG_LICENSE_FILES:=LICENCE
 PKG_CPE_ID:=cpe:/a:zsh_project:zsh
 
+PKG_FIXUP:=autoreconf
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
-
+PKG_BUILD_FLAGS:=gc-sections lto
 include $(INCLUDE_DIR)/package.mk
 
 define Package/zsh
@@ -30,7 +31,7 @@ define Package/zsh
   CATEGORY:=Utilities
   SUBMENU:=Shells
   TITLE:=The Z shell
-  DEPENDS:=+libcap +libncurses +libncursesw +libpcre +librt
+  DEPENDS:=+libcap +libncurses +libncursesw +librt +libpcre2
   URL:=https://www.zsh.org/
 endef
 
@@ -88,12 +89,6 @@ endef
 
 TARGET_CFLAGS += $(FPIC) -ffunction-sections -fdata-sections -flto
 TARGET_LDFLAGS += $(FPIC) -Wl,--gc-sections -flto
-
-define Package/zsh/conffiles
-/etc/zshrc
-/etc/zprofile
-/etc/zshenv
-endef
 
 define Package/zsh/postinst
 #!/bin/sh
