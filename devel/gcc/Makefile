@@ -71,8 +71,20 @@ define Package/gcc
   MENU:=1
 endef
 
+define Package/gcc-extras
+  SECTION:=devel
+  CATEGORY:=Development
+  TITLE:=gcc-extras
+  MAINTAINER:=Oskari Rauta <oskari.rauta@gmail.com>
+  DEPENDS:= gcc +libstdcpp @!arc
+endef
+
 define Package/gcc/config
   source "$(SOURCE)/Config.in"
+endef
+
+define Package/gcc-extras/description
+  sanitizers and other extras are as static and dynamic included in this package
 endef
 
 ifeq ($(CONFIG_INCLUDE_STATIC_LIBC),y)
@@ -175,7 +187,9 @@ define Build/Configure
 			--enable-target-optspace \
 			--with-gnu-ld \
 			--disable-nls \
-			--disable-libsanitizer \
+			--enable-__cxa_atexit \
+			--enable-lto \
+			--enable-libsanitizer \
 			--disable-libvtv \
 			--disable-libcilkrts \
 			--disable-libmudflap \
@@ -231,15 +245,51 @@ define Package/gcc/install
 	cp -a $(TOOLCHAIN_DIR)/lib/*.{o,so*} $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
 	cp -a $(TOOLCHAIN_DIR)/lib/*nonshared*.a  $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
 	cp -a $(TOOLCHAIN_DIR)/lib/libm.a  $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
+
 	$(COPY_STATIC_LIBC)
 	$(COPY_STATIC_LIBPTHREAD)
 	$(COPY_STATIC_LIBSTDC)
+
 	rm -f $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)/libgo*
 	rm -f $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)/libcc1*
 	echo '#!/bin/sh' > $(1)/usr/bin/gcc_env.sh
 	echo 'export LDFLAGS=$(ENVLDFLAGS)' >> $(1)/usr/bin/gcc_env.sh
 	echo 'export CFLAGS=$(ENVCFLAGS)' >> $(1)/usr/bin/gcc_env.sh
 	chmod +x $(1)/usr/bin/gcc_env.sh
+endef
+
+define Package/gcc-extras/install
+	$(INSTALL_DIR) $(1)/usr/bin $(1)/usr/lib
+	cp -a $(PKG_INSTALL_DIR)/usr/bin/{gcov-dump,gcov-tool,lto-dump} $(1)/usr/bin
+	cp -a $(PKG_INSTALL_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc-ar $(1)/usr/bin
+	cp -a $(PKG_INSTALL_DIR)/usr/bin/$(REAL_GNU_TARGET_NAME)-gcc-nm $(1)/usr/bin
+	ln -s $(REAL_GNU_TARGET_NAME)-gcc-ar $(1)/usr/bin/gcc-ar
+	ln -s $(REAL_GNU_TARGET_NAME)-gcc-nm $(1)/usr/bin/$(REAL_GNU_TARGET_NAME)-ranlib
+	ln -s $(REAL_GNU_TARGET_NAME)-gcc-nm $(1)/usr/bin/gcc-nm
+	ln -s $(REAL_GNU_TARGET_NAME)-gcc-nm $(1)/usr/bin/gcc-ranlib
+
+	# Sanitizers and other extras..
+	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libasan.a,libasan.la,libasan.so.8.0.0,libasan_preinit.o} $(1)/usr/lib
+	ln -s libasan.so.8.0.0 $(1)/usr/lib/libasan.so
+	ln -s libasan.so.8.0.0 $(1)/usr/lib/libasan.so.8
+	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libhwasan.a,libhwasan.la,libhwasan.so.0.0.0,libhwasan_preinit.o} $(1)/usr/lib
+	ln -s libhwasan.so.0.0.0 $(1)/usr/lib/libhwasan.so
+	ln -s libhwasan.so.0.0.0 $(1)/usr/lib/libhwasan.so.0
+	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libitm.a,libitm.la,libitm.so.1.0.0,libitm.spec} $(1)/usr/lib
+	ln -s libitm.so.1.0.0 $(1)/usr/lib/libitm.so.1
+	ln -s libitm.so.1.0.0 $(1)/usr/lib/libitm.so
+	cp -a $(PKG_INSTALL_DIR)/usr/lib/{liblsan.a,liblsan.la,liblsan.so.0.0.0,liblsan_preinit.o,libsanitizer.spec} $(1)/usr/lib
+	ln -s liblsan.so.0.0.0 $(1)/usr/lib/liblsan.so.0
+	ln -s liblsan.so.0.0.0 $(1)/usr/lib/liblsan.so
+	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libtsan.a,libtsan.la,libtsan.so.2.0.0,libtsan_preinit.o} $(1)/usr/lib
+	ln -s libtsan.so.2.0.0 $(1)/usr/lib/libtsan.so.2
+	ln -s libtsan.so.2.0.0 $(1)/usr/lib/libtsan.so
+	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libubsan.a,libubsan.la,libubsan.so.1.0.0} $(1)/usr/lib
+	ln -s libubsan.so.1.0.0 $(1)/usr/lib/libubsan.so.1
+	ln -s libubsan.so.1.0.0 $(1)/usr/lib/libubsan.so
+	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libstdc++exp.a,libstdc++exp.la} $(1)/usr/lib
+	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libstdc++fs.a,libstdc++fs.la} $(1)/usr/lib
+	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libsupc++.a,libsupc++.la} $(1)/usr/lib
 endef
 
 ifeq ($(CONFIG_INCLUDE_STATIC_LINK_SPEC),y)
@@ -257,3 +307,4 @@ endef
 endif
 
 $(eval $(call BuildPackage,gcc))
+$(eval $(call BuildPackage,gcc-extras))
