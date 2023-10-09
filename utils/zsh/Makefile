@@ -24,6 +24,8 @@ PKG_FIXUP:=autoreconf
 PKG_BUILD_PARALLEL:=1
 PKG_INSTALL:=1
 PKG_BUILD_FLAGS:=gc-sections lto
+PKG_REMOVE_FILES:=
+
 include $(INCLUDE_DIR)/package.mk
 
 define Package/zsh
