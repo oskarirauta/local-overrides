@@ -189,7 +189,7 @@ define Build/Configure
 			--disable-nls \
 			--enable-__cxa_atexit \
 			--enable-lto \
-			--enable-libsanitizer \
+			--disable-libsanitizer \
 			--disable-libvtv \
 			--disable-libcilkrts \
 			--disable-libmudflap \
@@ -269,24 +269,24 @@ define Package/gcc-extras/install
 	ln -s $(REAL_GNU_TARGET_NAME)-gcc-nm $(1)/usr/bin/gcc-ranlib
 
 	# Sanitizers and other extras..
-	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libasan.a,libasan.la,libasan.so.8.0.0,libasan_preinit.o} $(1)/usr/lib
-	ln -s libasan.so.8.0.0 $(1)/usr/lib/libasan.so
-	ln -s libasan.so.8.0.0 $(1)/usr/lib/libasan.so.8
-	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libhwasan.a,libhwasan.la,libhwasan.so.0.0.0,libhwasan_preinit.o} $(1)/usr/lib
-	ln -s libhwasan.so.0.0.0 $(1)/usr/lib/libhwasan.so
-	ln -s libhwasan.so.0.0.0 $(1)/usr/lib/libhwasan.so.0
+	#cp -a $(PKG_INSTALL_DIR)/usr/lib/{libasan.a,libasan.la,libasan.so.8.0.0,libasan_preinit.o} $(1)/usr/lib
+	#ln -s libasan.so.8.0.0 $(1)/usr/lib/libasan.so
+	#ln -s libasan.so.8.0.0 $(1)/usr/lib/libasan.so.8
+	#cp -a $(PKG_INSTALL_DIR)/usr/lib/{libhwasan.a,libhwasan.la,libhwasan.so.0.0.0,libhwasan_preinit.o} $(1)/usr/lib
+	#ln -s libhwasan.so.0.0.0 $(1)/usr/lib/libhwasan.so
+	#ln -s libhwasan.so.0.0.0 $(1)/usr/lib/libhwasan.so.0
 	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libitm.a,libitm.la,libitm.so.1.0.0,libitm.spec} $(1)/usr/lib
 	ln -s libitm.so.1.0.0 $(1)/usr/lib/libitm.so.1
 	ln -s libitm.so.1.0.0 $(1)/usr/lib/libitm.so
-	cp -a $(PKG_INSTALL_DIR)/usr/lib/{liblsan.a,liblsan.la,liblsan.so.0.0.0,liblsan_preinit.o,libsanitizer.spec} $(1)/usr/lib
-	ln -s liblsan.so.0.0.0 $(1)/usr/lib/liblsan.so.0
-	ln -s liblsan.so.0.0.0 $(1)/usr/lib/liblsan.so
-	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libtsan.a,libtsan.la,libtsan.so.2.0.0,libtsan_preinit.o} $(1)/usr/lib
-	ln -s libtsan.so.2.0.0 $(1)/usr/lib/libtsan.so.2
-	ln -s libtsan.so.2.0.0 $(1)/usr/lib/libtsan.so
-	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libubsan.a,libubsan.la,libubsan.so.1.0.0} $(1)/usr/lib
-	ln -s libubsan.so.1.0.0 $(1)/usr/lib/libubsan.so.1
-	ln -s libubsan.so.1.0.0 $(1)/usr/lib/libubsan.so
+	#cp -a $(PKG_INSTALL_DIR)/usr/lib/{liblsan.a,liblsan.la,liblsan.so.0.0.0,liblsan_preinit.o,libsanitizer.spec} $(1)/usr/lib
+	#ln -s liblsan.so.0.0.0 $(1)/usr/lib/liblsan.so.0
+	#ln -s liblsan.so.0.0.0 $(1)/usr/lib/liblsan.so
+	#cp -a $(PKG_INSTALL_DIR)/usr/lib/{libtsan.a,libtsan.la,libtsan.so.2.0.0,libtsan_preinit.o} $(1)/usr/lib
+	#ln -s libtsan.so.2.0.0 $(1)/usr/lib/libtsan.so.2
+	#ln -s libtsan.so.2.0.0 $(1)/usr/lib/libtsan.so
+	#cp -a $(PKG_INSTALL_DIR)/usr/lib/{libubsan.a,libubsan.la,libubsan.so.1.0.0} $(1)/usr/lib
+	#ln -s libubsan.so.1.0.0 $(1)/usr/lib/libubsan.so.1
+	#ln -s libubsan.so.1.0.0 $(1)/usr/lib/libubsan.so
 	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libstdc++exp.a,libstdc++exp.la} $(1)/usr/lib
 	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libstdc++fs.a,libstdc++fs.la} $(1)/usr/lib
 	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libsupc++.a,libsupc++.la} $(1)/usr/lib
