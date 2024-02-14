@@ -21,44 +21,20 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gcc
-GCC_VERSION:=$(call qstrip,$(CONFIG_GCC_VERSION))
-PKG_VERSION:=$(firstword $(subst +, ,$(GCC_VERSION)))
-PKG_RELEASE:=5
-GCC_DIR:=$(PKG_NAME)-$(PKG_VERSION)
+PKG_VERSION:=13.2.0
+PKG_RELEASE:=1
 
-PKG_SOURCE_URL:=@GNU/gcc/gcc-$(PKG_VERSION)
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.xz
+PKG_SOURCE_URL:=@GNU/gcc/gcc-$(PKG_VERSION)
+PKG_HASH:=e275e76442a6067341a27f04c5c6b83d8613144004c0413528863dc6b5c743da
+
 PKG_INSTALL:=1
 PKG_FIXUP:=libtool
 PKG_BUILD_PARALLEL:=1
 
 PKG_CPE_ID:=cpe:/a:gnu:gcc
 
-ifeq ($(PKG_VERSION),8.4.0)
-	PKG_HASH:=e30a6e52d10e1f27ed55104ad233c30bd1e99cfb5ff98ab022dc941edd1b2dd4
-endif
-
-ifeq ($(PKG_VERSION),10.3.0)
-	PKG_HASH:=64f404c1a650f27fc33da242e1f2df54952e3963a49e06e73f6940f3223ac344
-endif
-
-ifeq ($(PKG_VERSION),11.3.0)
-	PKG_HASH:=b47cf2818691f5b1e21df2bb38c795fac2cfbd640ede2d0a5e1c89e338a3ac39
-endif
-
-ifeq ($(PKG_VERSION),12.2.0)
-	PKG_HASH:=e549cf9cf3594a00e27b6589d4322d70e0720cdd213f39beb4181e06926230ff
-endif
-
-ifeq ($(PKG_VERSION),13.1.0)
-	PKG_HASH:=61d684f0aa5e76ac6585ad8898a2427aade8979ed5e7f85492286c4dfc13ee86
-endif
-
-ifeq ($(PKG_VERSION),13.2.0)
-	PKG_HASH:=e275e76442a6067341a27f04c5c6b83d8613144004c0413528863dc6b5c743da
-endif
-
-PATCH_DIR=./patches/$(GCC_VERSION)
+PATCH_DIR=./patches/13.2.0
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -79,30 +55,45 @@ define Package/gcc-extras
   DEPENDS:= gcc +libstdcpp @!arc
 endef
 
-define Package/gcc/config
-  source "$(SOURCE)/Config.in"
+define Package/libc-static
+  SECTION:=devel
+  CATEGORY:=Development
+  SUBMENU:=Static libraries
+  TITLE:=libc static library
+  MAINTAINER:=Oskari Rauta <oskari.rauta@gmail.com>
+endef
+
+define Package/libc-static/description
+  This package contains static libc
+endef
+
+define Package/libpthread-static
+  SECTION:=devel
+  CATEGORY:=Development
+  SUBMENU:=Static libraries
+  TITLE:=libpthread static library
+  MAINTAINER:=Oskari Rauta <oskari.rauta@gmail.com>
+endef
+
+define Package/libpthread-static
+  This package contains static libpthread
+endef
+
+define Package/libstdcpp-static
+  SECTION:=devel
+  CATEGORY:=Development
+  SUBMENU:=Static libraries
+  TITLE:=libstdcpp static library
+  MAINTAINER:=Oskari Rauta <oskari.rauta@gmail.com>
+endef
+
+define Package/libstdcpp-static/description
+  This package contains static libstdc++
 endef
 
 define Package/gcc-extras/description
   sanitizers and other extras are as static and dynamic included in this package
 endef
-
-ifeq ($(CONFIG_INCLUDE_STATIC_LIBC),y)
-	COPY_STATIC_LIBC=cp -a $(TOOLCHAIN_DIR)/lib/libc.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
-endif
-
-ifeq ($(CONFIG_INCLUDE_STATIC_LIBPTHREAD),y)
-	COPY_STATIC_LIBPTHREAD=cp -a $(TOOLCHAIN_DIR)/lib/libpthread.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
-endif
-
-ifeq ($(CONFIG_INCLUDE_STATIC_LIBSTDC),y)
-	COPY_STATIC_LIBSTDC=cp -a $(TOOLCHAIN_DIR)/lib/libstdc++.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
-endif
-
-ifeq ($(CONFIG_INCLUDE_STATIC_LINK_SPEC),y)
-	INSTALL_STATIC_SPEC=g++ -dumpspecs |sed s/--start-group}\ %G\ %L\ /--start-group}\ %G\ %L\ -lstdc++\ -lgcc_pic\ / >/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)/specs
-	REMOVE_STATIC_SPEC=rm /usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)/specs
-endif
 
 TARGET_LANGUAGES:="c,c++"
 BUGURL=https://dev.openwrt.org/
@@ -246,10 +237,6 @@ define Package/gcc/install
 	cp -a $(TOOLCHAIN_DIR)/lib/*nonshared*.a  $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
 	cp -a $(TOOLCHAIN_DIR)/lib/libm.a  $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
 
-	$(COPY_STATIC_LIBC)
-	$(COPY_STATIC_LIBPTHREAD)
-	$(COPY_STATIC_LIBSTDC)
-
 	rm -f $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)/libgo*
 	rm -f $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)/libcc1*
 	echo '#!/bin/sh' > $(1)/usr/bin/gcc_env.sh
@@ -292,19 +279,23 @@ define Package/gcc-extras/install
 	cp -a $(PKG_INSTALL_DIR)/usr/lib/{libsupc++.a,libsupc++.la} $(1)/usr/lib
 endef
 
-ifeq ($(CONFIG_INCLUDE_STATIC_LINK_SPEC),y)
-define Package/gcc/postinst
-#!/bin/sh
-
-$(INSTALL_STATIC_SPEC)
+define Package/libc-static/install
+	$(INSTALL_DIR) $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
+	cp -a $(TOOLCHAIN_DIR)/lib/libc.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
 endef
 
-define Package/gcc/postrm
-#!/bin/sh
-
-$(REMOVE_STATIC_SPEC)
+define Package/libpthread-static/install
+	$(INSTALL_DIR) $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
+	COPY_STATIC_LIBPTHREAD=cp -a $(TOOLCHAIN_DIR)/lib/libpthread.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
 endef
-endif
+
+define Package/libstdcpp-static/install
+	$(INSTALL_DIR) $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
+	COPY_STATIC_LIBSTDC=cp -a $(TOOLCHAIN_DIR)/lib/libstdc++.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
+endef
 
 $(eval $(call BuildPackage,gcc))
 $(eval $(call BuildPackage,gcc-extras))
+$(eval $(call BuildPackage,libc-static))
+$(eval $(call BuildPackage,libpthread-static))
+$(eval $(call BuildPackage,libstdcpp-static))
