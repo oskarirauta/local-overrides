@@ -63,20 +63,12 @@ define Package/libc-static
   MAINTAINER:=Oskari Rauta <oskari.rauta@gmail.com>
 endef
 
-define Package/libc-static/description
-  This package contains static libc
-endef
-
 define Package/libpthread-static
   SECTION:=devel
   CATEGORY:=Development
   SUBMENU:=Static libraries
   TITLE:=libpthread static library
   MAINTAINER:=Oskari Rauta <oskari.rauta@gmail.com>
-endef
-
-define Package/libpthread-static
-  This package contains static libpthread
 endef
 
 define Package/libstdcpp-static
@@ -87,12 +79,24 @@ define Package/libstdcpp-static
   MAINTAINER:=Oskari Rauta <oskari.rauta@gmail.com>
 endef
 
-define Package/libstdcpp-static/description
-  This package contains static libstdc++
+define Package/gcc/description
+  gcc and g++ compilers
 endef
 
 define Package/gcc-extras/description
   sanitizers and other extras are as static and dynamic included in this package
+endef
+
+define Package/libc-static/description
+  This package contains static libc
+endef
+
+define Package/libpthread-static/description
+  This package contains static libpthread
+endef
+
+define Package/libstdcpp-static/description
+  This package contains static libstdc++
 endef
 
 TARGET_LANGUAGES:="c,c++"
@@ -286,12 +290,12 @@ endef
 
 define Package/libpthread-static/install
 	$(INSTALL_DIR) $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
-	COPY_STATIC_LIBPTHREAD=cp -a $(TOOLCHAIN_DIR)/lib/libpthread.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
+	cp -a $(TOOLCHAIN_DIR)/lib/libpthread.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
 endef
 
 define Package/libstdcpp-static/install
 	$(INSTALL_DIR) $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
-	COPY_STATIC_LIBSTDC=cp -a $(TOOLCHAIN_DIR)/lib/libstdc++.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
+	cp -a $(TOOLCHAIN_DIR)/lib/libstdc++.a $(1)/usr/lib/$(PKG_NAME)/$(REAL_GNU_TARGET_NAME)/$(PKG_VERSION)
 endef
 
 $(eval $(call BuildPackage,gcc))
