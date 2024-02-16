@@ -1,3 +1,28 @@
+From b62e911341c8ec7446378b477c47da4256053dc0 Mon Sep 17 00:00:00 2001
+From: Oliver Kiddle <opk@zsh.org>
+Date: Sat, 13 May 2023 00:53:32 +0200
+Subject: [PATCH] 51723: migrate pcre module to pcre2
+
+---
+ ChangeLog          |   3 +
+ Src/Modules/pcre.c | 223 ++++++++++++++++++---------------------------
+ Test/V07pcre.ztst  |  13 ++-
+ configure.ac       |  20 ++--
+ 4 files changed, 110 insertions(+), 149 deletions(-)
+
+# diff --git a/ChangeLog b/ChangeLog
+# index f5c77f801..285b73b2c 100644
+# --- a/ChangeLog
+# +++ b/ChangeLog
+# @@ -1,5 +1,8 @@
+#  2023-05-13  Oliver Kiddle  <opk@zsh.org>
+ 
+# +	* 51723: Src/Modules/pcre.c, Test/V07pcre.ztst, configure.ac:
+# +	migrate pcre module to pcre2
+# +
+#  	* Felipe Contreras: 50612: Misc/vcs_info-examples: fix typo
+ 
+#  	* github #98: Vidhan Bhatt: Completion/Darwin/Command/_shortcuts:
 --- a/Src/Modules/pcre.c
 +++ b/Src/Modules/pcre.c
 @@ -34,11 +34,11 @@
@@ -16,35 +41,18 @@
  
  /**/
  static int
-@@ -47,8 +47,6 @@ zpcre_utf8_enabled(void)
- #if defined(MULTIBYTE_SUPPORT) && defined(HAVE_NL_LANGINFO) && defined(CODESET)
-     static int have_utf8_pcre = -1;
- 
--    /* value can toggle based on MULTIBYTE, so don't
--     * be too eager with caching */
-     if (have_utf8_pcre < -1)
- 	return 0;
- 
-@@ -56,15 +54,11 @@ zpcre_utf8_enabled(void)
+@@ -54,8 +54,8 @@ zpcre_utf8_enabled(void)
  	return 0;
  
      if ((have_utf8_pcre == -1) &&
--        (!strcmp(nl_langinfo(CODESET), "UTF-8"))) {
--
--	if (pcre_config(PCRE_CONFIG_UTF8, &have_utf8_pcre))
+-	(pcre_config(PCRE_CONFIG_UTF8, &have_utf8_pcre))) {
 -	    have_utf8_pcre = -2; /* erk, failed to ask */
 +       (pcre2_config(PCRE2_CONFIG_UNICODE, &have_utf8_pcre))) {
 +           have_utf8_pcre = -2; /* erk, failed to ask */
      }
  
--    if (have_utf8_pcre < 0)
--	return 0;
--    return have_utf8_pcre;
-+    return (have_utf8_pcre == 1) && (!strcmp(nl_langinfo(CODESET), "UTF-8"));
- 
- #else
-     return 0;
-@@ -75,47 +69,38 @@ zpcre_utf8_enabled(void)
+     return (have_utf8_pcre == 1) && (!strcmp(nl_langinfo(CODESET), "UTF-8"));
+@@ -69,47 +69,38 @@ zpcre_utf8_enabled(void)
  static int
  bin_pcre_compile(char *nam, char **args, Options ops, UNUSED(int func))
  {
@@ -108,7 +116,7 @@
  	return 1;
      }
      
-@@ -123,67 +108,51 @@ bin_pcre_compile(char *nam, char **args,
+@@ -117,67 +108,48 @@ bin_pcre_compile(char *nam, char **args,
  }
  
  /**/
@@ -163,18 +171,15 @@
 -zpcre_get_substrings(char *arg, int *ovec, int captured_count, char *matchvar,
 -		     char *substravar, int want_offset_pair, int matchedinarr,
 -		     int want_begin_end)
-+zpcre_get_substrings(pcre2_code *pat, char *arg, pcre2_match_data *mdata,
-+	int captured_count, char *matchvar, char *substravar, char *namedassoc,
-+	int want_offset_pair, int matchedinarr, int want_begin_end)
++zpcre_get_substrings(char *arg, pcre2_match_data *mdata, int captured_count,
++	char *matchvar, char *substravar, int want_offset_pair,
++	int matchedinarr, int want_begin_end)
  {
 -    char **captures, *match_all, **matches;
 +    PCRE2_SIZE *ovec;
 +    char *match_all, **matches;
      char offset_all[50];
      int capture_start = 1;
-+    int vec_off;
-+    PCRE2_SPTR ntable; /* table of named captures */
-+    uint32_t ncount, nsize;
  
      if (matchedinarr) {
 -	/* bash-style captures[0] entire-matched string in the array */
@@ -196,7 +201,7 @@
  	    setsparam("ZPCRE_OP", ztrdup(offset_all));
  	}
  	/*
-@@ -192,7 +161,7 @@ zpcre_get_substrings(char *arg, int *ove
+@@ -186,7 +158,7 @@ zpcre_get_substrings(char *arg, int *ove
  	 * ovec is length 2*(1+capture_list_length)
  	 */
  	if (matchvar) {
@@ -205,15 +210,14 @@
  	    setsparam(matchvar, match_all);
  	}
  	/*
-@@ -207,21 +176,34 @@ zpcre_get_substrings(char *arg, int *ove
+@@ -201,16 +173,12 @@ zpcre_get_substrings(char *arg, int *ove
  	 */
  	if (substravar &&
  	    (!want_begin_end || nelem)) {
 -	    char **x, **y;
--	    int vec_off, i;
--	    y = &captures[capture_start];
 +	    char **x;
-+	    int i;
+ 	    int vec_off, i;
+-	    y = &captures[capture_start];
  	    matches = x = (char **) zalloc(sizeof(char *) * (captured_count+1-capture_start));
 -	    for (i = capture_start; i < captured_count; i++, y++) {
 +	    for (i = capture_start; i < captured_count; i++) {
@@ -226,29 +230,7 @@
  	    }
  	    *x = NULL;
  	    setaparam(substravar, matches);
- 	}
- 
-+	if (!pcre2_pattern_info(pat, PCRE2_INFO_NAMECOUNT, &ncount) && ncount
-+		&& !pcre2_pattern_info(pat, PCRE2_INFO_NAMEENTRYSIZE, &nsize)
-+		&& !pcre2_pattern_info(pat, PCRE2_INFO_NAMETABLE, &ntable))
-+	{
-+	    char **hash, **hashptr;
-+	    uint32_t nidx;
-+	    hashptr = hash = (char **)zshcalloc((ncount+1)*2*sizeof(char *));
-+	    for (nidx = 0; nidx < ncount; nidx++) {
-+		vec_off = (ntable[nsize * nidx] << 9) + 2 * ntable[nsize * nidx + 1];
-+		/* would metafy the key but pcre limits characters in the name */
-+		*hashptr++ = ztrdup((char *) ntable + nsize * nidx + 2);
-+		*hashptr++ = metafy(arg + ovec[vec_off],
-+			ovec[vec_off+1]-ovec[vec_off], META_DUP);
-+	    }
-+	    sethparam(namedassoc, hash);
-+	}
-+
- 	if (want_begin_end) {
- 	    /*
- 	     * cond-infix rather than builtin; also not bash; so we set a bunch
-@@ -253,7 +235,8 @@ zpcre_get_substrings(char *arg, int *ove
+@@ -247,7 +215,8 @@ zpcre_get_substrings(char *arg, int *ove
  	    setiparam("MEND", offs + !isset(KSHARRAYS) - 1);
  	    if (nelem) {
  		char **mbegin, **mend, **bptr, **eptr;
@@ -258,7 +240,7 @@
  
  		bptr = mbegin = zalloc(sizeof(char*)*(nelem+1));
  		eptr = mend = zalloc(sizeof(char*)*(nelem+1));
-@@ -293,8 +276,6 @@ zpcre_get_substrings(char *arg, int *ove
+@@ -287,8 +256,6 @@ zpcre_get_substrings(char *arg, int *ove
  		setaparam("mend", mend);
  	    }
  	}
@@ -267,7 +249,7 @@
      }
  
      return 0;
-@@ -320,29 +301,33 @@ getposint(char *instr, char *nam)
+@@ -314,7 +281,8 @@ getposint(char *instr, char *nam)
  static int
  bin_pcre_match(char *nam, char **args, Options ops, UNUSED(int func))
  {
@@ -276,41 +258,8 @@
 +    pcre2_match_data *pcre_mdata = NULL;
      char *matched_portion = NULL;
      char *plaintext = NULL;
--    char *receptacle = NULL;
-+    char *receptacle;
-+    char *named = NULL;
-     int return_value = 1;
-     /* The subject length and offset start are both int values in pcre_exec */
-     int subject_len;
-     int offset_start = 0;
-     int want_offset_pair = 0;
-+    int use_dfa = 0;
- 
-     if (pcre_pattern == NULL) {
- 	zwarnnam(nam, "no pattern has been compiled");
- 	return 1;
-     }
- 
--    matched_portion = "MATCH";
--    receptacle = "match";
--    if(OPT_HASARG(ops,c='a')) {
--	receptacle = OPT_ARG(ops,c);
--    }
--    if(OPT_HASARG(ops,c='v')) {
--	matched_portion = OPT_ARG(ops,c);
-+    if (!(use_dfa = OPT_ISSET(ops, 'd'))) {
-+	matched_portion = OPT_HASARG(ops, c='v') ? OPT_ARG(ops, c) : "MATCH";
-+	named = OPT_HASARG(ops, c='A') ? OPT_ARG(ops, c) : ".pcre.match";
-+    } else if (OPT_HASARG(ops, c='v') || OPT_HASARG(ops, c='A')) {
-+	zwarnnam(nam, "-d cannot be combined with -%c", c);
-+	return 1;
-     }
-+    receptacle = OPT_HASARG(ops, 'a') ? OPT_ARG(ops, 'a') : "match";
-+
-     if(OPT_HASARG(ops,c='n')) { /* The offset position to start the search, in bytes. */
- 	if ((offset_start = getposint(OPT_ARG(ops,c), nam)) < 0)
- 	    return 1;
-@@ -350,36 +335,50 @@ bin_pcre_match(char *nam, char **args, O
+     char *receptacle = NULL;
+@@ -344,36 +312,30 @@ bin_pcre_match(char *nam, char **args, O
      /* For the entire match, 'Return' the offset byte positions instead of the matched string */
      if(OPT_ISSET(ops,'b')) want_offset_pair = 1;
  
@@ -331,25 +280,7 @@
 -    else
 -	ret = pcre_exec(pcre_pattern, pcre_hints, plaintext, subject_len, offset_start, 0, ovec, ovecsize);
 +	ret = PCRE2_ERROR_NOMATCH;
-+    else if (use_dfa) {
-+	PCRE2_SIZE old, wscount = 128, capcount = 128;
-+	void *workspace = zhalloc(sizeof(int) * wscount);
-+	pcre_mdata = pcre2_match_data_create(capcount, NULL);
-+	do {
-+	    ret = pcre2_dfa_match(pcre_pattern, (PCRE2_SPTR) plaintext, subject_len,
-+		offset_start, 0, pcre_mdata, NULL, (int *) workspace, wscount);
-+	    if (ret == PCRE2_ERROR_DFA_WSSIZE) {
-+		old = wscount;
-+		wscount += wscount / 2;
-+		workspace = hrealloc(workspace, sizeof(int) * old, sizeof(int) * wscount);
-+	    } else if (ret == 0) {
-+		capcount += capcount / 2;
-+		pcre2_match_data_free(pcre_mdata);
-+		pcre_mdata = pcre2_match_data_create(capcount, NULL);
-+	    } else
-+		break;
-+	} while(1);
-+    } else {
++    else {
 +	pcre_mdata = pcre2_match_data_create_from_pattern(pcre_pattern, NULL);
 +	ret = pcre2_match(pcre_pattern, (PCRE2_SPTR) plaintext, subject_len,
 +		offset_start, 0, pcre_mdata, NULL);
@@ -360,16 +291,13 @@
 +    else if (ret == PCRE2_ERROR_NOMATCH) /* no match */;
      else if (ret>0) {
 -	zpcre_get_substrings(plaintext, ovec, ret, matched_portion, receptacle,
--			     want_offset_pair, 0, 0);
-+	zpcre_get_substrings(pcre_pattern, plaintext, pcre_mdata, ret,
-+		matched_portion, receptacle, named, want_offset_pair, use_dfa, 0);
++	zpcre_get_substrings(plaintext, pcre_mdata, ret, matched_portion, receptacle,
+ 			     want_offset_pair, 0, 0);
  	return_value = 0;
      }
      else {
 -	zwarnnam(nam, "error in pcre_exec [%d]", ret);
-+	PCRE2_UCHAR buffer[256];
-+	pcre2_get_error_message(ret, buffer, sizeof(buffer));
-+	zwarnnam(nam, "error in pcre matching for /%s/: %s", plaintext, buffer);
++	zwarnnam(nam, "error in pcre2_match [%d]", ret);
      }
      
 -    if (ovec)
@@ -379,7 +307,7 @@
      zsfree(plaintext);
  
      return return_value;
-@@ -389,17 +388,19 @@ bin_pcre_match(char *nam, char **args, O
+@@ -383,17 +345,19 @@ bin_pcre_match(char *nam, char **args, O
  static int
  cond_pcre_match(char **a, int id)
  {
@@ -404,7 +332,7 @@
  
      lhstr = cond_str(a,0,0);
      rhre = cond_str(a,1,0);
-@@ -407,9 +408,6 @@ cond_pcre_match(char **a, int id)
+@@ -401,9 +365,6 @@ cond_pcre_match(char **a, int id)
      rhre_plain = ztrdup(rhre);
      unmetafy(lhstr_plain, &lhstr_plain_len);
      unmetafy(rhre_plain, &rhre_plain_len);
@@ -414,7 +342,7 @@
  
      if (isset(BASHREMATCH)) {
  	svar = NULL;
-@@ -421,27 +419,27 @@ cond_pcre_match(char **a, int id)
+@@ -415,27 +376,27 @@ cond_pcre_match(char **a, int id)
  
      switch(id) {
  	 case CPCRE_PLAIN:
@@ -455,19 +383,16 @@
  		    return_value = 0; /* no match */
  		    break;
  		}
-@@ -450,9 +448,8 @@ cond_pcre_match(char **a, int id)
+@@ -444,7 +405,7 @@ cond_pcre_match(char **a, int id)
  		    break;
  		}
                  else if (r>0) {
 -		    zpcre_get_substrings(lhstr_plain, ov, r, svar, avar, 0,
--					 isset(BASHREMATCH),
--					 !isset(BASHREMATCH));
-+		    zpcre_get_substrings(pcre_pat, lhstr_plain, pcre_mdata, r, svar, avar,
-+			    ".pcre.match", 0, isset(BASHREMATCH), !isset(BASHREMATCH));
++		    zpcre_get_substrings(lhstr_plain, pcre_mdata, r, svar, avar, 0,
+ 					 isset(BASHREMATCH),
+ 					 !isset(BASHREMATCH));
  		    return_value = 1;
- 		    break;
- 		}
-@@ -463,10 +460,10 @@ cond_pcre_match(char **a, int id)
+@@ -457,10 +418,10 @@ cond_pcre_match(char **a, int id)
  	free(lhstr_plain);
      if(rhre_plain)
  	free(rhre_plain);
@@ -481,15 +406,7 @@
  
      return return_value;
  }
-@@ -488,18 +485,18 @@ static struct conddef cotab[] = {
- 
- static struct builtin bintab[] = {
-     BUILTIN("pcre_compile", 0, bin_pcre_compile, 1, 1, 0, "aimxs",  NULL),
--    BUILTIN("pcre_match",   0, bin_pcre_match,   1, 1, 0, "a:v:n:b",    NULL),
-+    BUILTIN("pcre_match",   0, bin_pcre_match,   1, 1, 0, "A:a:v:n:bd",    NULL),
-     BUILTIN("pcre_study",   0, bin_pcre_study,   0, 0, 0, NULL,    NULL)
- };
- 
+@@ -489,11 +450,11 @@ static struct builtin bintab[] = {
  
  static struct features module_features = {
      bintab, sizeof(bintab)/sizeof(*bintab),
@@ -504,7 +421,7 @@
      NULL, 0,
      NULL, 0,
      0
-@@ -546,19 +543,9 @@ cleanup_(Module m)
+@@ -540,19 +501,9 @@ cleanup_(Module m)
  int
  finish_(UNUSED(Module m))
  {
@@ -528,7 +445,14 @@
  
 --- a/Test/V07pcre.ztst
 +++ b/Test/V07pcre.ztst
-@@ -135,6 +135,11 @@
+@@ -129,12 +129,17 @@
+ >78884; ZPCRE_OP: 25 30
+ >90210; ZPCRE_OP: 31 36
+ 
+-# Embedded NULs allowed in plaintext, but not in RE (although \0 as two-chars allowed)
++# Embedded NULs allowed in plaintext, in RE, pcre supports \0 as two-chars
+   [[ $'a\0bc\0d' =~ '^(a\0.)(.+)$' ]]
+   print "${#MATCH}; ${#match[1]}; ${#match[2]}"
  0:ensure ASCII NUL passes in and out of matched plaintext
  >6; 3; 3
  
@@ -540,63 +464,49 @@
  # Ensure the long-form infix operator works
    [[ foo -pcre-match ^f..$ ]]
    print $?
---- a/config.h.in
-+++ b/config.h.in
-@@ -475,8 +475,8 @@
- /* Define to 1 if you have the `pcre_exec' function. */
- #undef HAVE_PCRE_EXEC
- 
--/* Define to 1 if you have the <pcre.h> header file. */
--#undef HAVE_PCRE_H
-+/* Define to 1 if you have the <pcre2.h> header file. */
-+#undef HAVE_PCRE2_H
- 
- /* Define to 1 if you have the `pcre_study' function. */
- #undef HAVE_PCRE_STUDY
+@@ -181,7 +186,11 @@
+   [[ é =~ '^..\z' ]]; echo $?
+   LANG=$LANG_SAVE
+   [[ é =~ '^.\z' ]]; echo $?
+-0:swich between C/UTF-8 locales
++0:switch between C/UTF-8 locales
+ >0
+ >0
+ >0
++
++  [[ abc =~ 'a(d*)bc' ]] && print "$#MATCH; $#match; ${#match[1]}"
++0:empty capture
++>3; 1; 0
 --- a/configure.ac
 +++ b/configure.ac
-@@ -438,7 +438,18 @@ fi],
+@@ -438,7 +438,7 @@ fi],
  
  dnl Do you want to look for pcre support?
  AC_ARG_ENABLE(pcre,
 -AS_HELP_STRING([--enable-pcre],[enable the search for the pcre library (may create run-time library dependencies)]))
 +AS_HELP_STRING([--enable-pcre],[enable the search for the pcre2 library (may create run-time library dependencies)]))
-+
-+AC_ARG_VAR(PCRE_CONFIG, [pathname of pcre2-config if it is not in PATH])
-+if test "x$enable_pcre" = xyes; then
-+  AC_CHECK_PROG([PCRE_CONFIG], pcre2-config, pcre2-config)
-+  if test "x$PCRE_CONFIG" = x; then
-+    enable_pcre=no
-+    AC_MSG_WARN([pcre2-config not found: pcre module is disabled.])
-+    AC_MSG_NOTICE(
-+      [Set PCRE_CONFIG to pathname of pcre2-config if it is not in PATH.])
-+  fi
-+fi
  
  dnl Do you want to look for capability support?
  AC_ARG_ENABLE(cap,
-@@ -660,16 +671,12 @@ AC_HEADER_DIRENT
- AC_HEADER_STAT
- AC_HEADER_SYS_WAIT
+@@ -662,13 +662,12 @@ AC_HEADER_SYS_WAIT
  
--oldcflags="$CFLAGS"
--if test x$enable_pcre = xyes; then
+ oldcflags="$CFLAGS"
+ if test x$enable_pcre = xyes; then
 -AC_CHECK_PROG([PCRECONF], pcre-config, pcre-config)
 -dnl Typically (meaning on this single RedHat 9 box in front of me)
 -dnl pcre-config --cflags produces a -I output which needs to go into
++AC_CHECK_PROG([PCRECONF], pcre2-config, pcre2-config)
 +dnl pcre2-config --cflags may produce a -I output which needs to go into
  dnl CPPFLAGS else configure's preprocessor tests don't pick it up,
  dnl producing a warning.
 -if test "x$ac_cv_prog_PCRECONF" = xpcre-config; then
 -  CPPFLAGS="$CPPFLAGS `pcre-config --cflags`"
--fi
-+if test "x$enable_pcre" = xyes; then
-+  CPPFLAGS="`$PCRE_CONFIG --cflags` $CPPFLAGS"
-+  AC_CHECK_HEADERS([pcre2.h],,,[#define PCRE2_CODE_UNIT_WIDTH 8])
++if test "x$ac_cv_prog_PCRECONF" = xpcre2-config; then
++  CPPFLAGS="$CPPFLAGS `pcre2-config --cflags`"
+ fi
  fi
  
- AC_CHECK_HEADERS(sys/time.h sys/times.h sys/select.h termcap.h termio.h \
-@@ -678,7 +685,7 @@ AC_CHECK_HEADERS(sys/time.h sys/times.h
+@@ -678,9 +677,10 @@ AC_CHECK_HEADERS(sys/time.h sys/times.h
  		 locale.h errno.h stdio.h stdarg.h varargs.h stdlib.h \
  		 unistd.h sys/capability.h \
  		 utmp.h utmpx.h sys/types.h pwd.h grp.h poll.h sys/mman.h \
@@ -604,16 +514,27 @@
 +		 netinet/in_systm.h langinfo.h wchar.h stddef.h \
  		 sys/stropts.h iconv.h ncurses.h ncursesw/ncurses.h \
  		 ncurses/ncurses.h)
++AC_CHECK_HEADERS([pcre2.h],,,[#define PCRE2_CODE_UNIT_WIDTH 8])
  if test x$dynamic = xyes; then
-@@ -958,9 +965,8 @@ if test "x$ac_found_iconv" = "xyes"; the
+   AC_CHECK_HEADERS(dlfcn.h)
+   AC_CHECK_HEADERS(dl.h)
+@@ -958,9 +958,7 @@ if test "x$ac_found_iconv" = "xyes"; the
  fi
  
  if test x$enable_pcre = xyes; then
 -dnl pcre-config should probably be employed here
 -dnl AC_SEARCH_LIBS(pcre_compile, pcre)
 -  LIBS="`$ac_cv_prog_PCRECONF --libs` $LIBS"
-+  LIBS="`$PCRE_CONFIG --libs8` $LIBS"
-+  AC_CHECK_FUNCS(pcre2_compile_8)
++  LIBS="`$ac_cv_prog_PCRECONF --libs8` $LIBS"
  fi
  
  dnl ---------------------
+@@ -1323,7 +1321,7 @@ AC_CHECK_FUNCS(strftime strptime mktime
+ 	       pathconf sysconf \
+ 	       tgetent tigetflag tigetnum tigetstr setupterm initscr resize_term \
+ 	       getcchar setcchar waddwstr wget_wch win_wch use_default_colors \
+-	       pcre_compile pcre_study pcre_exec \
++	       pcre2_compile_8 \
+ 	       nl_langinfo \
+ 	       erand48 open_memstream \
+ 	       posix_openpt \
