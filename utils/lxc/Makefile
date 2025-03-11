@@ -10,7 +10,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=lxc
 PKG_VERSION:=6.0.3
-PKG_RELEASE:=1
+PKG_RELEASE:=3
 
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://linuxcontainers.org/downloads/lxc/
@@ -138,7 +138,7 @@ define Package/liblxc
   SECTION:=libs
   CATEGORY:=Libraries
   TITLE:=LXC userspace library
-  DEPENDS+= +libcap +libpthread +LXC_SECCOMP:libseccomp +libopenssl
+  DEPENDS+= +libcap +libpthread +LXC_SECCOMP:libseccomp +libopenssl +libdbus
 endef
 
 define Package/lxc-init
