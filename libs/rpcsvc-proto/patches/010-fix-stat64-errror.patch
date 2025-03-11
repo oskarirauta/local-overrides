@@ -1,0 +1,13 @@
+--- a/rpcgen/rpc_main.c
++++ b/rpcgen/rpc_main.c
+@@ -68,6 +68,10 @@
+ # endif
+ #endif
+ 
++#ifndef stat64
++#define stat64 stat
++#endif
++
+ struct commandline
+   {
+     int cflag;			/* xdr C routines */
